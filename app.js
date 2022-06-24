@@ -31,8 +31,16 @@ var logger = require('morgan');
 
 // mysql connection end
 
+let blogposts = [
+  { id: 1, title: 'Republic of Korea'},
+  { id: 2, title: 'United States'},
+  { id: 3, title: 'Great Britain'},
+  { id: 4, title: 'Canada'},
+  { id: 5, title: 'Japan'}
+]
+
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/blogposts');
 
 var app = express();
 
@@ -47,7 +55,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/blogposts', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
