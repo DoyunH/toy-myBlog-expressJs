@@ -1,76 +1,42 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const http = require("http");
+const fs = require("fs");
+const url = require("url");
 
-// mysql connection start
+const app = http.createServer(function (request, response) {
+  let _url = request.url;
+  let query = url.parse(_url, true).query;
+  let title = query.id;
+  console.log(query);
 
-// const mysql = require('mysql');
-
-// const con = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'root',
-//   password: ''
-// })
-
-// con.connect(function(err) {
-//   if (err) {
-//     console.log(err);
-//     return;
-//   };
-//   console.log('Connected mysql');
-//   con.query('CREATE DATEBASE express_db', function(err, results) {
-//     if (err) {
-//       console.log(err);
-//       return;
-//     };
-//     console.log('database created')
-//   })
-// })
-
-// mysql connection end
-
-let blogposts = [
-  { id: 1, title: 'Republic of Korea'},
-  { id: 2, title: 'United States'},
-  { id: 3, title: 'Great Britain'},
-  { id: 4, title: 'Canada'},
-  { id: 5, title: 'Japan'}
-]
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/blogposts');
-
-var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/blogposts', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+  if (_url == "/") {
+    title = "Welcome";
+  }
+  if (_url == "/favicon.ico") {
+    return response.writeHead(404);
+  }
+  response.writeHead(200);
+  const template = `
+    <!doctype html>
+    <html>
+    <head>
+      <title>WEB1 - ${title}</title>
+      <meta charset="utf-8">
+    </head>
+    <body>
+      <h1><a href="/">WEB</a></h1>
+      <ol>
+        <li><a href="/?id=HTML">HTML</a></li>
+        <li><a href="/?id=CSS">CSS</a></li>
+        <li><a href="/?id=JavaScript">JavaScript</a></li>
+      </ol>
+      <h2>${title}</h2>
+      <p><a href="https://www.w3.org/TR/html5/" target="_blank" title="html5 speicification">Hypertext Markup Language (HTML)</a> is the standard markup language for <strong>creating <u>web</u> pages</strong> and web applications.Web browsers receive HTML documents from a web server or from local storage and render them into multimedia web pages. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document.
+      <img src="coding.jpg" width="100%">
+      </p><p style="margin-top:45px;">HTML elements are the building blocks of HTML pages. With HTML constructs, images and other objects, such as interactive forms, may be embedded into the rendered page. It provides a means to create structured documents by denoting structural semantics for text such as headings, paragraphs, lists, links, quotes and other items. HTML elements are delineated by tags, written using angle brackets.
+      </p>
+    </body>
+    </html>
+  `;
+  response.end(template);
 });
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-module.exports = app;
+app.listen(3000);
