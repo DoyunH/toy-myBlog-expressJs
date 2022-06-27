@@ -17,6 +17,7 @@ const templateHTML = (title, filelist, body) => {
         <ol>
           ${list}
         </ol>
+        <a href="/create">create</a>
         ${body}
       </body>
       </html>
@@ -52,6 +53,22 @@ const app = http.createServer(function (request, response) {
         response.writeHead(200);
         response.end(template);
       });
+    });
+  } else if (pathname === "/create") {
+    fs.readdir("./data", function (err, filelist) {
+      const title = "write article";
+      const template = templateHTML(
+        title,
+        filelist,
+        `<h2>${title}</h2>
+        <form action='/create_process' method='post'>
+        <p><input type='text' name='title' placeholder='title'></p>
+        <p><textarea name='description' placeholder='description'></textarea></p>
+        <p><input type='submit'></p>
+        </form>`
+      );
+      response.writeHead(200);
+      response.end(template);
     });
   } else {
     response.writeHead(404);
