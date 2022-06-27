@@ -1,6 +1,7 @@
 const http = require("http");
 const fs = require("fs");
 const url = require("url");
+const qs = require("querystring");
 
 const templateHTML = (title, filelist, body) => {
   const list = templateListMaker(filelist);
@@ -70,6 +71,18 @@ const app = http.createServer(function (request, response) {
       response.writeHead(200);
       response.end(template);
     });
+  } else if (pathname === "/create_process") {
+    let body = "";
+    request.on("data", function (data) {
+      body = body + data;
+    });
+    request.on("end", function () {
+      const post = qs.parse(body);
+      console.log(post.title);
+      console.log(post.description);
+    });
+    response.writeHead(200);
+    response.end("success");
   } else {
     response.writeHead(404);
     response.end("Not found");
