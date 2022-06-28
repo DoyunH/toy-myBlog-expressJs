@@ -54,7 +54,14 @@ const app = http.createServer(function (request, response) {
           }</p>`,
           path === "/"
             ? '<a href="/create">create</a>'
-            : `<a href="/create">create</a><br><a href="/update?id=${title}">update</a>`
+            : `
+            <a href="/create">create</a>
+            <a href="/update?id=${title}">update</a>
+            <form action="/delete_process" method="post">
+              <input type="hidden" name="id" value="${title}">
+              <input type="submit" value="delete">
+            </form>
+            `
         );
         response.writeHead(200);
         response.end(template);
@@ -90,6 +97,60 @@ const app = http.createServer(function (request, response) {
       // post file write
       fs.writeFile(`./data/${title}`, description, "utf8", function (err) {
         response.writeHead(302, {Location: `/?id=${title}`});
+        response.end();
+      });
+    });
+  } else if (pathname === "/update") {
+    fs.readdir("./data", function (err, filelist) {
+      fs.readFile(`./data/${query.id}`, "utf8", function (err, description) {
+        const title = query.id;
+        const template = templateHTML(
+          title,
+          filelist,
+          `<h2>${title ? title : "Welcome"}</h2>
+          <form action='/update_process' method='post'>
+          <p><input type='hidden' name='id' value='${title}'></p>
+          <p><input type='text' name='title' placeholder='title' value='${title}'></p>
+          <p><textarea name='description' placeholder='description'>${description}</textarea></p>
+          <p><input type='submit'></p>
+          </form>`,
+          ""
+        );
+        response.writeHead(200);
+        response.end(template);
+      });
+    });
+  } else if (pathname === "/update_process") {
+    let body = "";
+    request.on("data", function (data) {
+      body = body + data;
+    });
+    request.on("end", function () {
+      const post = qs.parse(body);
+      const title = post.title;
+      const id = post.id;
+      const description = post.description;
+
+      // post file write
+      fs.rename(`./data/${id}`, `./data/${title}`, function (err) {
+        fs.writeFile(`./data/${title}`, description, "utf8", function (err) {
+          response.writeHead(302, {Location: `/?id=${title}`});
+          response.end();
+        });
+      });
+    });
+  } else if (pathname === "/delete_process") {
+    let body = "";
+    request.on("data", function (data) {
+      body = body + data;
+    });
+    request.on("end", function () {
+      const post = qs.parse(body);
+      const id = post.id;
+
+      // post file write
+      fs.unlink(`./data/${id}`, function (err) {
+        response.writeHead(302, {Location: `/`});
         response.end();
       });
     });
