@@ -2,37 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const url = require("url");
 const qs = require("querystring");
-
-const template = {
-  HTML: (title, filelist, body, control) => {
-    const list = template.list(filelist);
-    return `
-    <!doctype html>
-    <html>
-    <head>
-      <title>WEB1 - ${title}</title>
-      <meta charset="utf-8">
-    </head>
-    <body>
-    <h1><a href="/">WEB</a></h1>
-    <ol>
-    ${list}
-    </ol>
-    ${control}
-    ${body}
-    </body>
-    </html>
-    `;
-  },
-  list: (filelist) => {
-    const list = filelist
-      .map((file) => {
-        return `<li><a href='/?id=${file}'>${file}</a></li>`;
-      })
-      .join("\n");
-    return list;
-  },
-};
+const template = require("./lib/template.js");
 
 const app = http.createServer(function (request, response) {
   let _url = request.url;
@@ -43,12 +13,12 @@ const app = http.createServer(function (request, response) {
   let title = query.id;
 
   if (pathname === "/") {
-    console.log(url.parse(_url, true));
     fs.readdir("./data", function (err, filelist) {
       fs.readFile(`./data/${query.id}`, "utf8", function (err, description) {
+        const list = template.list(filelist);
         const html = template.HTML(
           title,
-          filelist,
+          list,
           `<h2>${title ? title : "Welcome"}</h2> <p>${
             description ? description : "Hello, Node.js"
           }</p>`,
