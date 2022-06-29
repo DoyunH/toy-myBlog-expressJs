@@ -3,6 +3,8 @@ const fs = require("fs");
 const url = require("url");
 const qs = require("querystring");
 const template = require("./lib/template.js");
+const postData = require("./lib/postData.js");
+const dataProcess = require("./lib/dataProcess.js");
 
 const app = http.createServer(function (request, response) {
   let _url = request.url;
@@ -13,63 +15,11 @@ const app = http.createServer(function (request, response) {
   let title = query.id;
 
   if (pathname === "/") {
-    fs.readdir("./data", function (err, filelist) {
-      fs.readFile(`./data/${query.id}`, "utf8", function (err, description) {
-        const list = template.list(filelist);
-        const html = template.HTML(
-          title,
-          list,
-          `<h2>${title ? title : "Welcome"}</h2> <p>${
-            description ? description : "Hello, Node.js"
-          }</p>`,
-          path === "/"
-            ? '<a href="/create">create</a>'
-            : `
-            <a href="/create">create</a>
-            <a href="/update?id=${title}">update</a>
-            <form action="/delete_process" method="post">
-              <input type="hidden" name="id" value="${title}">
-              <input type="submit" value="delete">
-            </form>
-            `
-        );
-        response.writeHead(200);
-        response.end(html);
-      });
-    });
+    postData.getPostData(title, path, response);
   } else if (pathname === "/create") {
-    fs.readdir("./data", function (err, filelist) {
-      const title = "write article";
-      const html = template.HTML(
-        title,
-        filelist,
-        `<h2>${title}</h2>
-        <form action='/create_process' method='post'>
-        <p><input type='text' name='title' placeholder='title'></p>
-        <p><textarea name='description' placeholder='description'></textarea></p>
-        <p><input type='submit'></p>
-        </form>`,
-        ""
-      );
-      response.writeHead(200);
-      response.end(html);
-    });
+    postData.createPostData(title, response);
   } else if (pathname === "/create_process") {
-    let body = "";
-    request.on("data", function (data) {
-      body = body + data;
-    });
-    request.on("end", function () {
-      const post = qs.parse(body);
-      const title = post.title;
-      const description = post.description;
-
-      // post file write
-      fs.writeFile(`./data/${title}`, description, "utf8", function (err) {
-        response.writeHead(302, {Location: `/?id=${title}`});
-        response.end();
-      });
-    });
+    dataProcess.createProcess(request, qs, response);
   } else if (pathname === "/update") {
     fs.readdir("./data", function (err, filelist) {
       fs.readFile(`./data/${query.id}`, "utf8", function (err, description) {
