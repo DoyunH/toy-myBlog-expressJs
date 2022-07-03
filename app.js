@@ -23,39 +23,9 @@ const app = http.createServer(function (request, response) {
   } else if (pathname === "/update") {
     dataProcess.updateView(query, template, response);
   } else if (pathname === "/update_process") {
-    let body = "";
-    request.on("data", function (data) {
-      body = body + data;
-    });
-    request.on("end", function () {
-      const post = qs.parse(body);
-      const title = post.title;
-      const id = post.id;
-      const description = post.description;
-
-      // post file write
-      fs.rename(`./data/${id}`, `./data/${title}`, function (err) {
-        fs.writeFile(`./data/${title}`, description, "utf8", function (err) {
-          response.writeHead(302, {Location: `/?id=${title}`});
-          response.end();
-        });
-      });
-    });
+    dataProcess.updateProcess(request, qs, response);
   } else if (pathname === "/delete_process") {
-    let body = "";
-    request.on("data", function (data) {
-      body = body + data;
-    });
-    request.on("end", function () {
-      const post = qs.parse(body);
-      const id = post.id;
-
-      // post file write
-      fs.unlink(`./data/${id}`, function (err) {
-        response.writeHead(302, {Location: `/`});
-        response.end();
-      });
-    });
+    dataProcess.deleteProcess(request, qs, response);
   } else {
     response.writeHead(404);
     response.end("Not found");
