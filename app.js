@@ -21,26 +21,7 @@ const app = http.createServer(function (request, response) {
   } else if (pathname === "/create_process") {
     dataProcess.createProcess(request, qs, response);
   } else if (pathname === "/update") {
-    dataProcess.updateProcess(query, template, response);
-    // fs.readdir("./data", function (err, filelist) {
-    //   fs.readFile(`./data/${query.id}`, "utf8", function (err, description) {
-    //     const title = query.id;
-    //     const html = template.HTML(
-    //       title,
-    //       filelist,
-    //       `<h2>${title ? title : "Welcome"}</h2>
-    //       <form action='/update_process' method='post'>
-    //       <p><input type='hidden' name='id' value='${title}'></p>
-    //       <p><input type='text' name='title' placeholder='title' value='${title}'></p>
-    //       <p><textarea name='description' placeholder='description'>${description}</textarea></p>
-    //       <p><input type='submit'></p>
-    //       </form>`,
-    //       ""
-    //     );
-    //     response.writeHead(200);
-    //     response.end(html);
-    //   });
-    // });
+    dataProcess.updateView(query, template, response);
   } else if (pathname === "/update_process") {
     let body = "";
     request.on("data", function (data) {
