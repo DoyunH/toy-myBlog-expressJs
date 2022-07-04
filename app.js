@@ -26,19 +26,33 @@ const app = http.createServer(function (request, response) {
   if (pathname === "/") {
     // postData.getPostData(title, path, response);
     db.query(`SELECT * FROM topic`, function (err, topics) {
-      console.log(topics);
-      const list = template.list(topics);
-      const sanitizedTitle = sanitizeHtml("title");
-      const sanitizedDescription = sanitizeHtml("description");
-      const html = template.HTML(
-        sanitizedTitle,
-        list,
-        `<h2>${sanitizedTitle ? sanitizedTitle : "Welcome"}</h2> <p>${
-          sanitizedDescription ? sanitizedDescription : "Hello, Node.js"
-        }</p>`,
-        path === "/"
-          ? '<a href="/create">create</a>'
-          : `
+      if (err) {
+        throw err;
+      }
+      db.query(
+        `SELECT * FROM topic ${query.id && "WHERE id=?"}`,
+        [query.id],
+        (err2, topic) => {
+          if (err2) {
+            throw err2;
+          }
+          // check is Main or Not
+          const isMain = topic.length !== 1;
+
+          const list = template.list(topics);
+          const sanitizedTitle = sanitizeHtml(
+            isMain ? "Welcome" : topic[0].title
+          );
+          const sanitizedDescription = sanitizeHtml(
+            isMain ? "Here is a Doyun's Blog" : topic[0].description
+          );
+          const html = template.HTML(
+            sanitizedTitle,
+            list,
+            `<h2>${sanitizedTitle}</h2> <p>${sanitizedDescription}</p>`,
+            path === "/"
+              ? '<a href="/create">create</a>'
+              : `
               <a href="/create">create</a>
               <a href="/update?id=${sanitizedTitle}">update</a>
               <form action="/delete_process" method="post">
@@ -46,10 +60,12 @@ const app = http.createServer(function (request, response) {
                 <input type="submit" value="delete">
               </form>
               `
+          );
+          response.writeHead(200);
+          response.end(html);
+          return;
+        }
       );
-      response.writeHead(200);
-      response.end(html);
-      return;
     });
   } else if (pathname === "/create") {
     postData.createPostData(title, response);
