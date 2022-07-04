@@ -5,6 +5,15 @@ const qs = require("querystring");
 const template = require("./lib/template.js");
 const postData = require("./lib/postData.js");
 const dataProcess = require("./lib/dataProcess.js");
+const sanitizeHtml = require("sanitize-html");
+const mysql = require("mysql");
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "lucas9436",
+  database: "myblog",
+});
+db.connect();
 
 const app = http.createServer(function (request, response) {
   let _url = request.url;
@@ -15,7 +24,33 @@ const app = http.createServer(function (request, response) {
   let title = query.id;
 
   if (pathname === "/") {
-    postData.getPostData(title, path, response);
+    // postData.getPostData(title, path, response);
+    db.query(`SELECT * FROM topic`, function (err, topics) {
+      console.log(topics);
+      const list = template.list(topics);
+      const sanitizedTitle = sanitizeHtml("title");
+      const sanitizedDescription = sanitizeHtml("description");
+      const html = template.HTML(
+        sanitizedTitle,
+        list,
+        `<h2>${sanitizedTitle ? sanitizedTitle : "Welcome"}</h2> <p>${
+          sanitizedDescription ? sanitizedDescription : "Hello, Node.js"
+        }</p>`,
+        path === "/"
+          ? '<a href="/create">create</a>'
+          : `
+              <a href="/create">create</a>
+              <a href="/update?id=${sanitizedTitle}">update</a>
+              <form action="/delete_process" method="post">
+                <input type="hidden" name="id" value="${sanitizedTitle}">
+                <input type="submit" value="delete">
+              </form>
+              `
+      );
+      response.writeHead(200);
+      response.end(html);
+      return;
+    });
   } else if (pathname === "/create") {
     postData.createPostData(title, response);
   } else if (pathname === "/create_process") {
